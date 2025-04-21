@@ -1,0 +1,13 @@
+﻿<Window x:Class="FinanceTracker.Views.ExportOptionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Export Options" Height="150" Width="300"
+        Background="#1e1e1e" Foreground="White"
+        WindowStartupLocation="CenterOwner">
+    <StackPanel Margin="20" VerticalAlignment="Center">
+        <TextBlock Text="Choose export method:" FontSize="16" Margin="0,0,0,10"/>
+        <Button Content="Export to CSV" Click="ExportToCsv_Click" Margin="0,0,0,5"/>
+        <Button Content="Email Transaction History" Click="Email_Click"/>
+    </StackPanel>
+</Window>
+

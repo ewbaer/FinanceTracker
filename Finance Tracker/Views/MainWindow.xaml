@@ -1,0 +1,218 @@
+<Window x:Class="FinanceTracker.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FinanceTracker.Views"
+        xmlns:conv="clr-namespace:FinanceTracker.Converters"
+        xmlns:vm="clr-namespace:FinanceTracker.ViewModels"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+        mc:Ignorable="d"
+        Title="Dashboard" Height="600" Width="900"
+        Background="#1e1e1e" Foreground="White">
+
+    <Window.Resources>
+        <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <conv:CurrencyFormatterConverter x:Key="CurrencyFormatterConverter"/>
+        <conv:AmountToColorConverter x:Key="AmountToColorConverter"/>
+
+        <Style TargetType="GridViewColumnHeader">
+            <Setter Property="Background" Value="#2e2e2e"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="#444"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+
+        <Style TargetType="Button" x:Key="SidebarButtonStyle">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.85"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+
+    <DockPanel LastChildFill="True">
+        <Border DockPanel.Dock="Left"
+        Background="#2e2e2e"
+        Width="150"
+        Margin="10"
+        VerticalAlignment="Stretch"
+        CornerRadius="10">
+            <DockPanel LastChildFill="True">
+                <StackPanel DockPanel.Dock="Top" Orientation="Vertical" Margin="10" HorizontalAlignment="Center">
+                    <Border Width="40" Height="40" CornerRadius="20" ClipToBounds="True" Margin="0,0,0,5">
+                        <Image Source="/Assets/FinanceTracker-modified.png" Stretch="UniformToFill"/>
+                    </Border>
+                    <TextBlock x:Name="UsernameText" Text="Username" FontSize="14" TextDecorations="Underline"
+                               HorizontalAlignment="Center" Margin="0,5,0,5"/>
+                    <Button Content="Logout" Click="Logout_Click" Width="80" Height="30" FontSize="12"
+                            Style="{StaticResource SidebarButtonStyle}" Background="#7f8c8d"
+                            HorizontalAlignment="Center" Padding="4"/>
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Bottom" Margin="10">
+                    <Button Content="+ Income" Click="AddIncome_Click" Style="{StaticResource SidebarButtonStyle}"
+                            Background="#2ecc71"/>
+                    <Button Content="+ Expense" Click="AddExpense_Click" Style="{StaticResource SidebarButtonStyle}"
+                            Background="#e74c3c"/>
+                    <Button Content="Export" Click="OpenExportOptions_Click" Style="{StaticResource SidebarButtonStyle}"
+                            Background="#3498db"/>
+                </StackPanel>
+
+                <Grid />
+            </DockPanel>
+        </Border>
+
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="200"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <UniformGrid Grid.Row="0" Rows="1" Columns="3" Margin="0,0,0,20">
+                <Border Background="#2e2e2e" CornerRadius="10" Padding="10" Margin="5">
+                    <StackPanel>
+                        <TextBlock Text="Total Income" FontSize="14"/>
+                        <TextBlock Text="{Binding TotalIncome, Converter={StaticResource CurrencyFormatterConverter}}"
+                                   FontSize="24" FontWeight="Bold" Foreground="Green"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#2e2e2e" CornerRadius="10" Padding="10" Margin="5">
+                    <StackPanel>
+                        <TextBlock Text="Total Expense" FontSize="14"/>
+                        <TextBlock Text="{Binding TotalExpense, Converter={StaticResource CurrencyFormatterConverter}}"
+                                   FontSize="24" FontWeight="Bold" Foreground="Red"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#2e2e2e" CornerRadius="10" Padding="10" Margin="5">
+                    <StackPanel>
+                        <TextBlock Text="Balance" FontSize="14"/>
+                        <TextBlock Text="{Binding Balance, Converter={StaticResource CurrencyFormatterConverter}}"
+                                   FontSize="24" FontWeight="Bold" Foreground="LightBlue"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <Border Grid.Row="1" CornerRadius="10" Background="#2e2e2e" Margin="0,0,0,20" Padding="5">
+                <lvc:CartesianChart Grid.Row="1"
+                        Series="{Binding LineSeries}"
+                        XAxes="{Binding XAxes}"
+                        YAxes="{Binding YAxes}"
+                        Background="#2e2e2e"
+                        Foreground="White"
+                        LegendPosition="Right"
+                        Margin="0,0,0,20"
+                        Height="200"/>
+            </Border>
+
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <ListView Grid.Row="0" ItemsSource="{Binding Transactions}"
+                          SelectedItem="{Binding SelectedTransaction, Mode=TwoWay}"
+                          Background="#2e2e2e" Foreground="White" BorderBrush="#444" BorderThickness="1"
+                          FontFamily="Segoe UI" FontSize="16" Margin="0,0,0,10">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            <Setter Property="Padding" Value="5"/>
+                            <Setter Property="Margin" Value="1"/>
+                            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+                            <Setter Property="BorderBrush" Value="Transparent"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#444"/>
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#555"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Title" Width="150">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Title}" FontSize="16"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Amount" Width="120">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Amount, Converter={StaticResource CurrencyFormatterConverter}}"
+                                                   FontSize="16"
+                                                   Foreground="{Binding Amount, Converter={StaticResource AmountToColorConverter}}"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Category" Width="130">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Category}" FontSize="16"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Date" Width="120">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Date, StringFormat='MM/dd/yyyy'}" FontSize="16" Foreground="White"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Time" Width="100">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Time, StringFormat='hh:mm tt'}" FontSize="16" Foreground="White"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+                    <Button Content="Edit" Width="80" Margin="5" Click="EditTransaction_Click"
+                            Visibility="{Binding SelectedTransaction, Converter={StaticResource NullToVisibilityConverter}}"/>
+                    <Button Content="Delete" Width="80" Margin="5" Click="DeleteTransaction_Click"
+                            Visibility="{Binding SelectedTransaction, Converter={StaticResource NullToVisibilityConverter}}"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>
