@@ -39,13 +39,6 @@ A modern WPF desktop app to track income, expenses, and balance with charts and 
 
    ---
 
-##  License
-
-This project is licensed under the MIT License.  
-See the [LICENSE](LICENSE) file for details.
-
----
-
 ##  Author
 
 **Ethan Baer**  
